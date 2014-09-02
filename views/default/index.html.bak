@@ -1,0 +1,4 @@
+{{extend 'layout.html'}}
+
+<h1>Welcome</h1>
+{{=A( _href=URL( 'default', 'workflow' ) )}}

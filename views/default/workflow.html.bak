@@ -1,0 +1,2 @@
+{{extend 'layout.html'}}
+<h1>This is the default/workflow.html template</h1>

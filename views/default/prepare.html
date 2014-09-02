@@ -1,0 +1,27 @@
+{{extend 'layout.html'}}
+
+<div style="border:thin solid black; padding:1em; margin:0.5em">
+    {{=H4( workflow_title )}}
+    {{=T( workflow_descr )}}
+</div>
+
+<div style="float:right">
+    <div style="background-color:#E0E0E0; padding:1em; margin:0.5em">
+     <h5>Add workflow parameter:</h5>
+    {{=paramForm}}
+    </div>
+    <div style="background-color:#E0E0E0; padding:1em; margin:0.5em">
+    <h5>Add workflow target:</h5>
+    {{=targetForm}}
+    </div>
+    <div style="background-color:#E0F0E0; padding:1em; margin:0.5em">
+    <h5>Run workflow:</h5>
+    {{=runForm}}
+    </div>
+</div>
+
+<h4>Workflow parameters</h4>
+{{=BEAUTIFY( paramDict )}}
+
+<h4>Workflow targets</h4>
+{{=BEAUTIFY( targetList )}}
