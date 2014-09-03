@@ -21,6 +21,22 @@ def index():
     return dict()
 
 @auth.requires_login()
+def userfile():
+    """
+    Manages a users data.
+    """
+    grid = SQLFORM.smartgrid(
+      db.Userfile,
+      linked_tables=[],
+      details=False,
+      searchable=False,
+      csv=False,
+      headers={ 'Userfile.reffile' : 'File' }
+    )
+
+    return dict( grid=grid )
+
+@auth.requires_login()
 def workflow():
     """
     Manages a users workflows.
@@ -97,10 +113,11 @@ def prepare():
     # create and process run form
     runForm = FORM(
       INPUT( _type='hidden', _name='run', _value='True', ),
+      INPUT( _type='hidden', _name='runconf_id', _value=runconf_id ),
       INPUT( _type='submit', _value='Run ...' ) )
 
     if request.vars.run != None:
-        redirect( URL( 'history' ) )
+        redirect( URL( 'history', vars=dict( runconf_id=runconf_id, workflow_id=workflow_id ) ) )
 
     # fetch parameter bindings
     paramDict = dict()
@@ -137,21 +154,75 @@ def prepare():
       targetForm=targetForm,
       runForm=runForm )
 
-@auth.requires_login()
-def userfile():
-    """
-    Manages a users data.
-    """
+
+def history():
+
+    def getSuffix( workflow_id, runconf_id ):
+
+        suffix = '// Suffix created by Cfui\n'
+
+        # fetch parameter name set
+        paramSet = db( db.Param.workflow_id == workflow_id ).select( db.Param.id, db.Param.name )
+
+        for param in paramSet:
+
+            suffix += param.name+' ='
+
+            parambindSet = db(
+              ( db.Parambind.userfile_id == db.Userfile.id )&
+              ( db.Parambind.param_id == param.id )&
+              ( db.Parambind.runconf_id == runconf_id ) ).select( db.Userfile.reffile )
+
+            isnil = True
+            for parambind in parambindSet:
+                suffix += " '"+parambind.reffile+"'"
+                isnil = False
+
+            if isnil:
+                suffix += ' nil'
+
+            suffix += ';\n'
+
+        suffix += '\n';
+
+        targetSet = db(
+          ( db.Targetbind.target_id == db.Target.id )&
+          ( db.Targetbind.runconf_id == runconf_id ) ).select( db.Target.name )
+
+        comma = False
+        isnil = True
+        for target in targetSet:
+
+            if comma:
+                suffix += ' '
+            comma = True
+
+            suffix += target.name
+            isnil = False
+
+        if --isnil:
+            suffix += ';'
+
+        return suffix
+
     grid = SQLFORM.smartgrid(
-      db.Userfile,
-      linked_tables=[],
+      db.History,
       details=False,
       searchable=False,
       csv=False,
-      headers={ 'Userfile.reffile' : 'File' }
-    )
+      create=False )
 
-    return dict( grid=grid )
+    suffix = '// No Suffix'
+    if request.vars.runconf_id != None:
+
+        workflow_id = request.vars.workflow_id
+        runconf_id = request.vars.runconf_id
+
+        suffix = getSuffix( workflow_id, runconf_id )
+
+        response.flash = 'Workflow started.'
+
+    return dict( grid=grid, suffix=suffix, v=request.vars )
 
 
 def user():

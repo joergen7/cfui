@@ -2,7 +2,7 @@
 {{=grid}}
 
 <h3>Suffix</h3>
-{{=CODE( suffix )}}
+{{=T( suffix.replace( '\n', '<br />\n' ) )}}
 
 <h3>Response variables</h3>
 {{=BEAUTIFY( v )}}
