@@ -152,7 +152,7 @@ db.define_table(
   'Parambind',
   Field( 'pos', 'integer', notnull=True ),
   Field( 'param_id', 'reference Param', notnull=True ),
-  Field( 'link_id', 'reference Userfile', notnull=True ),
+  Field( 'userfile_id', 'reference Userfile', notnull=True ),
   Field( 'runconf_id', 'reference Runconf', notnull=True ) )
 
 

@@ -115,6 +115,8 @@ db.define_table(
   Field( 'name' ),
   format='%(name)s' )
 
+db.Target.id.readable = False
+db.Target.workflow_id.writable = db.Target.workflow_id.readable = False
 
 # History
 db.define_table(

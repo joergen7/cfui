@@ -86,29 +86,51 @@ def prepare():
         nextpos += 1
 
     # create and process parameter form
-    paramForm = SQLFORM(
-      db.Parambind,
-      fields=['param_id', 'userfile_id'],
-      hidden=dict( runconf_id=runconf_id ),
-      submit_button='Add' )
+    paramSet = db( db.Param.workflow_id==workflow_id ).select( db.Param.id, db.Param.name )
+    userfileSet = db( db.Userfile ).select( db.Userfile.id, db.Userfile.title )
 
-    paramForm.vars.pos=nextpos
-    paramForm.vars.runconf_id=runconf_id
+    paramForm = FORM(
+      INPUT( _type='hidden', _name='runconf_id', _value=runconf_id ),
+      TABLE(
+        TR( TD( 'Parameter:' ), TD(
+          SELECT(
+            _name='param_id',
+            *[OPTION( paramSet[i].name, _value=str( paramSet[i].id ) ) for i in range( len( paramSet ) )] ) ) ),
+        TR( TD( 'User file:' ), TD(
+          SELECT(
+            _name='userfile_id',
+            *[OPTION( userfileSet[i].title, _value=str( userfileSet[i].id ) ) for i in range( len( userfileSet ) )] ) ) ),
+        TR( TD(), TD( INPUT( _value='Add', _type='submit' ) ) ) ) )
 
-    if paramForm.accepts( request, session ):
+    if request.vars.param_id != None:
+
+        param_id = request.vars.param_id
+        userfile_id = request.vars.userfile_id
+
+        db.Parambind.insert( pos=nextpos, param_id=param_id, userfile_id=userfile_id, runconf_id=runconf_id )
+
         response.flash = 'Parameter added.'
 
+
     # create and process target form
-    targetForm = SQLFORM(
-      db.Targetbind,
-      fields=['target_id'],
-      hidden=dict( runconf_id=runconf_id ),
-      submit_button='Add' )
+    targetSet = db( db.Target.workflow_id==workflow_id ).select( db.Target.id, db.Target.name )
 
-    targetForm.vars.runconf_id=runconf_id
+    targetForm = FORM(
+       INPUT( _type='hidden', _name='runconf_id', _value=runconf_id ),
+       TABLE(
+         TR( TD( 'Target:' ), TD(
+           SELECT(
+             _name='target_id',
+             *[OPTION( targetSet[i].name, _value=str( targetSet[i].id ) ) for i in range( len( targetSet ) )] ) ) ),
+         TR( TD(), TD( INPUT( _value='Add', _type='submit' ) ) ) ) )
 
-    if targetForm.accepts( request, session ):
-        response.flash='Target added.'
+    if request.vars.target_id != None:
+
+        target_id = request.vars.target_id
+
+        db.Targetbind.insert( target_id=target_id, runconf_id=runconf_id )
+
+        response.flash = 'Target added.'
 
     # create and process run form
     runForm = FORM(

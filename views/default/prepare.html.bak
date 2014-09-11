@@ -21,8 +21,7 @@
 </div>
 
 <h4>Workflow parameters</h4>
-
 {{=BEAUTIFY( paramDict )}}
 
-
 <h4>Workflow targets</h4>
+{{=BEAUTIFY( targetList )}}
