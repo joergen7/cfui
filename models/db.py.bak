@@ -115,6 +115,8 @@ db.define_table(
   Field( 'name' ),
   format='%(name)s' )
 
+db.Target.id.readable = False
+db.Target.workflow_id.writable = db.Target.workflow_id.readable = False
 
 # History
 db.define_table(
@@ -159,8 +161,8 @@ db.define_table(
 # Targetbind
 db.define_table(
   'Targetbind',
-  Field( 'target_id', 'reference Target' ),
-  Field( 'runconf_id', 'reference Runconf' ) )
+  Field( 'target_id', 'reference Target', notnull=True ),
+  Field( 'runconf_id', 'reference Runconf', notnull=True ) )
 
 
 

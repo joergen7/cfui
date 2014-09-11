@@ -124,7 +124,11 @@ db.define_table(
   Field( 'workflow_id', 'reference Workflow' ),
   Field( 'tstart', 'datetime' ),
   Field( 'tend', 'datetime' ),
-  Field( 'term' ) )
+  Field( 'term' ),
+  Field( 'ln_stdout' ),
+  Field( 'ln_stderr' ),
+  Field( 'ln_output' ),
+  Field( 'ln_statlog' ) )
 
 
 # Runconf
@@ -161,8 +165,8 @@ db.define_table(
 # Targetbind
 db.define_table(
   'Targetbind',
-  Field( 'target_id', 'reference Target' ),
-  Field( 'runconf_id', 'reference Runconf' ) )
+  Field( 'target_id', 'reference Target', notnull=True ),
+  Field( 'runconf_id', 'reference Runconf', notnull=True ) )
 
 
 
