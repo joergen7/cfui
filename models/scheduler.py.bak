@@ -1,0 +1,93 @@
+# -*- coding: utf-8 -*-
+
+def getSuffix( runconf_id ):
+
+    suffix = '// Suffix created by Cfui\n'
+
+    #fetch workflow id
+    workflow_id = db( db.Runconf.id == runconf_id ).select( db.Runconf.workflow_id ).first().workflow_id
+
+    # fetch parameter name set
+    paramSet = db( db.Param.workflow_id == workflow_id ).select( db.Param.id, db.Param.name )
+
+    for param in paramSet:
+
+        suffix += param.name+' ='
+
+        parambindSet = db(
+          ( db.Parambind.userfile_id == db.Userfile.id )&
+          ( db.Parambind.param_id == param.id )&
+          ( db.Parambind.runconf_id == runconf_id ) ).select( db.Userfile.reffile )
+
+        isnil = True
+        for parambind in parambindSet:
+            suffix += " '"+parambind.reffile+"'"
+            isnil = False
+
+        if isnil:
+            suffix += ' nil'
+
+        suffix += ';\n'
+
+    suffix += '\n';
+
+    targetSet = db(
+      ( db.Targetbind.target_id == db.Target.id )&
+      ( db.Targetbind.runconf_id == runconf_id ) ).select( db.Target.name )
+
+    comma = False
+    for target in targetSet:
+
+        if comma:
+            suffix += ' '
+        comma = True
+
+        suffix += target.name
+        isnil = False
+
+    if comma:
+        suffix += ';'
+
+    return suffix
+
+def createWf( runconf_id ):
+
+    import os
+
+    filename = db( ( db.Workflow.id==db.Runconf.workflow_id )&( db.Runconf.id==runconf_id ) ).select( db.Workflow.script ).first().script
+    filename = os.path.join( request.folder, 'uploads', filename )
+
+    with open( filename )as f:
+        script = f.read()
+
+    suffix = getSuffix( runconf_id )
+
+
+    filename = os.path.join( request.folder, 'private', runconf_id+'.cf' )
+    with open( filename, 'w' )as f:
+        f.write( script )
+        f.write( '\n' )
+        f.write( suffix )
+
+    return filename
+
+
+def task_cf_local( runconf_id, wf ):
+
+    from subprocess import call
+    import os
+
+    # call( ['cuneiform', wf], cwd=os.path.join( request.folder, 'uploads' ) )
+    call( ["cuneiform", "-h"] )
+
+def cfrun( runconf_id ):
+
+    wf = createWf( runconf_id )
+
+    scheduler.queue_task( task_cf_local, pvars=dict( runconf_id=runconf_id, wf=wf ) )
+    db.commit()
+
+
+
+from gluon.scheduler import Scheduler
+scheduler = Scheduler( db )

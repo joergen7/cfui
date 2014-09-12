@@ -1,0 +1,38 @@
+/** Word Count
+ *  v0.3
+ *
+ *  Parameters: txt
+ *  Targets: result
+ */
+
+deftask wc( csv( File ) : txt( File ) )in bash *{
+    awk '{
+        for( i = 1; i <= NF; i++ )
+            freq[ $i ]++
+    }
+    END {
+        for( word in freq )
+            printf "%s\t%d\n", word, freq[ word ]
+    }' $txt > $csv
+}*
+
+deftask groupby( result( File ) : <csv( File )> )in bash *{
+    cat ${csv[@]} | awk '{
+        freq[ $1 ] += $2
+    }
+    END {
+        for( word in freq )
+            printf "%s\t%d\n", word, freq[ word ]
+    }' > $result
+}*
+
+csv = wc( txt: txt );
+
+result = groupby( csv: csv );
+
+
+
+// Suffix created by Cfui
+txt = 'Userfile.reffile.81853c24bee78973.62656e7a6b6f2e747874.txt' 'Userfile.reffile.b9eef13821816e0f.67726f6e656d657965722e747874.txt';
+
+result;
