@@ -181,7 +181,7 @@ def history():
 
 
     grid = SQLFORM.smartgrid(
-      db.History,
+      db.Runconf,
       details=False,
       searchable=False,
       csv=False,

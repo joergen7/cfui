@@ -124,7 +124,11 @@ db.define_table(
   Field( 'workflow_id', 'reference Workflow' ),
   Field( 'tstart', 'datetime' ),
   Field( 'tend', 'datetime' ),
-  Field( 'term' ) )
+  Field( 'term' ),
+  Field( 'ln_stdout' ),
+  Field( 'ln_stderr' ),
+  Field( 'ln_output' ),
+  Field( 'ln_statlog' ) )
 
 
 # Runconf

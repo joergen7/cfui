@@ -118,23 +118,12 @@ db.define_table(
 db.Target.id.readable = False
 db.Target.workflow_id.writable = db.Target.workflow_id.readable = False
 
-# History
-db.define_table(
-  'History',
-  Field( 'workflow_id', 'reference Workflow' ),
-  Field( 'tstart', 'datetime' ),
-  Field( 'tend', 'datetime' ),
-  Field( 'term' ),
-  Field( 'ln_stdout' ),
-  Field( 'ln_stderr' ),
-  Field( 'ln_output' ),
-  Field( 'ln_statlog' ) )
-
-
 # Runconf
 db.define_table(
   'Runconf',
-  Field( 'workflow_id', 'reference Workflow' ) )
+  Field( 'workflow_id', 'reference Workflow', notnull=True ),
+  Field( 'tstart', 'datetime' ) )
+
 
 
 # Userfile

@@ -193,7 +193,7 @@ def history():
         workflow_id = request.vars.workflow_id
         runconf_id = request.vars.runconf_id
 
-        suffix = getSuffix( workflow_id, runconf_id )
+        suffix = getSuffix( runconf_id )
 
         cfrun( runconf_id )
 

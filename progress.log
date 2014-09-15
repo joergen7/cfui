@@ -599,3 +599,5 @@
 [2014-09-12 13:58:42] EDIT cfui/models/scheduler.py: 0
 [2014-09-12 13:59:09] EDIT cfui/models/scheduler.py: 0
 [2014-09-12 14:22:53] EDIT cfui/models/scheduler.py: -1
+[2014-09-15 11:45:02] EDIT cfui/models/db.py: -9
+[2014-09-15 12:04:50] EDIT cfui/controllers/default.py: 0
