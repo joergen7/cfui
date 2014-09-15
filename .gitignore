@@ -3,4 +3,4 @@ cache/*
 databases/*
 errors/*
 uploads/*
-
+private/*
