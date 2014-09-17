@@ -1,0 +1,8 @@
+{{
+import ntpath
+
+response.headers['Content-Type']='text/plain'
+response.headers['Content-disposition'] = 'attachment; filename=%s'%ntpath.basename( file )
+with open( file )as f: response.write( f.read() )
+
+}}

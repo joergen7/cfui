@@ -1,8 +1,5 @@
 {{extend 'layout.html'}}
 {{=grid}}
 
-<h3>Suffix</h3>
-{{=T( suffix.replace( '\n', '<br />\n' ) )}}
-
 <h3>Response variables</h3>
 {{=BEAUTIFY( v )}}

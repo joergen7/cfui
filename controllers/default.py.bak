@@ -139,6 +139,9 @@ def prepare():
       INPUT( _type='submit', _value='Run ...' ) )
 
     if request.vars.run != None:
+
+        cfrun( runconf_id )
+        response.flash = 'Workflow started.'
         redirect( URL( 'history', vars=dict( runconf_id=runconf_id, workflow_id=workflow_id ) ) )
 
     # fetch parameter bindings
@@ -177,29 +180,64 @@ def prepare():
       runForm=runForm )
 
 
+@auth.requires_login()
 def history():
 
+    import datetime
+
+    yesterday = request.now-datetime.timedelta(days=1)
+    db( ( db.Runconf.started_on==None )&( db.Runconf.created_on < yesterday ) ).delete()
 
     grid = SQLFORM.smartgrid(
-      db.History,
+      db.Runconf,
       details=False,
       searchable=False,
+      editable=False,
+      deletable=False,
       csv=False,
       create=False )
 
-    suffix = '// No Suffix'
-    if request.vars.runconf_id != None:
+    return dict( grid=grid )
 
-        workflow_id = request.vars.workflow_id
-        runconf_id = request.vars.runconf_id
 
-        suffix = getSuffix( runconf_id )
+@auth.requires_login()
+def statlog():
 
-        cfrun( runconf_id )
+    import os
 
-        response.flash = 'Workflow started.'
+    runconf_id = request.vars.runconf_id
+    return dict( file = os.path.join( request.folder, 'private', str( runconf_id )+'_stat.log' ) )
 
-    return dict( grid=grid, suffix=suffix, v=request.vars )
+
+@auth.requires_login()
+def view_statlog():
+    return statlog()
+
+@auth.requires_login()
+def outfile():
+
+    import os
+
+    outputfile_id = request.vars.outputfile_id
+    reffile = db( db.Outputfile.id==outputfile_id ).select( db.Outputfile.reffile ).first().reffile
+    return dict( file=os.path.join( request.folder, 'private', reffile ) )
+
+@auth.requires_login()
+def view_outfile():
+    return outfile()
+
+@auth.requires_login()
+def outchannel():
+
+    import os
+
+    runconf_id = request.vars.runconf_id
+    return dict( file=os.path.join( request.folder, 'private', str( runconf_id )+'_stdout.txt' ) )
+
+
+@auth.requires_login()
+def view_outchannel():
+    return outchannel()
 
 
 def user():

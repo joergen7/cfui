@@ -1,0 +1,7 @@
+{{extend 'layout.html'}}
+{{import ntpath}}
+{{with open( file )as f: s = f.read()}}
+{{=A( 'Back to History ...', _href=URL( 'default', 'history' ) )}}
+<h1>Stderr channel</h1>
+{{=A( ntpath.basename( file ), _href=URL( 'errchannel', vars=dict( runconf_id=request.vars.runconf_id ) ) )}}
+{{=CODE( s )}}

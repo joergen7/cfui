@@ -1,0 +1,7 @@
+{{extend 'layout.html'}}
+{{import ntpath}}
+{{with open( file )as f: s = f.read()}}
+{{=A( 'Back to History ...', _href=URL( 'history' ) )}}
+<h1>Stat log</h1>
+{{=A( ntpath.basename( file ), _href=URL( 'statlog', vars=dict( runconf_id=request.vars.runconf_id ) ) )}}
+{{=CODE( s )}}

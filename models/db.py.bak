@@ -88,7 +88,7 @@ db.define_table(
   Field( 'descr', 'text' ),
   Field( 'created_by', 'reference auth_user', default=auth.user_id ),
   Field( 'created_on', 'datetime', default=request.now ),
-  Field.Virtual( 'Action', lambda row: A( 'Run ...', _href=URL( 'default', 'prepare', vars=dict( workflow_id=row.Workflow.id ) ) ) ),
+  Field.Virtual( 'Action', lambda row: A( 'run ...', _href=URL( 'default', 'prepare', vars=dict( workflow_id=row.Workflow.id ) ) ) ),
   format='%(title)s',
   common_filter=lambda query: db.Workflow.created_by==auth.user_id )
 
@@ -105,7 +105,7 @@ db.define_table(
   format='%(name)s' )
 
 db.Param.id.readable = False
-db.Param.workflow_id.writable = db.Param.workflow_id.readable = False
+db.Param.workflow_id.writable = False
 
 
 # Target
@@ -116,25 +116,32 @@ db.define_table(
   format='%(name)s' )
 
 db.Target.id.readable = False
-db.Target.workflow_id.writable = db.Target.workflow_id.readable = False
-
-# History
-db.define_table(
-  'History',
-  Field( 'workflow_id', 'reference Workflow' ),
-  Field( 'tstart', 'datetime' ),
-  Field( 'tend', 'datetime' ),
-  Field( 'term' ),
-  Field( 'ln_stdout' ),
-  Field( 'ln_stderr' ),
-  Field( 'ln_output' ),
-  Field( 'ln_statlog' ) )
-
+db.Target.workflow_id.writable = False
 
 # Runconf
 db.define_table(
   'Runconf',
-  Field( 'workflow_id', 'reference Workflow' ) )
+  Field( 'workflow_id', 'reference Workflow', notnull=True ),
+  Field( 'created_on', 'datetime', default=request.now ),
+  Field( 'committed_on', 'datetime' ),
+  Field( 'started_on', 'datetime' ),
+  Field( 'ended_on', 'datetime' ),
+  Field( 'retval', 'integer' ),
+  Field.Virtual( 'Std out', lambda row: A( 'std out ...', _href=URL( 'view_outchannel', vars=dict( runconf_id=row.Runconf.id ) ) ) ),
+  Field.Virtual( 'Std err', lambda row: A( 'std err ...', _href=URL( 'view_errchannel', vars=dict( runconf_id=row.Runconf.id ) ) ) ),
+  Field.Virtual( 'Stat log', lambda row: A( 'stat log ...', _href=URL( 'view_statlog', vars=dict( runconf_id=row.Runconf.id ) ) ) ) )
+
+# Outputfile
+db.define_table(
+  'Outputfile',
+  Field( 'runconf_id', 'reference Runconf', notnull=True ),
+  Field( 'reffile', notnull=True ),
+  Field.Virtual( 'Output file', lambda row: P( A( 'view ...', _href=URL( 'view_outfile', vars=dict( outputfile_id=row.Outputfile.id ) ) ), ' ', A( 'file', _href=URL( 'outfile', vars=dict( outputfile_id=row.Outputfile.id ) ) ) ) ) )
+
+db.Outputfile.runconf_id.writable = False
+db.Outputfile.id.readable = False
+db.Outputfile.reffile.writable = False
+
 
 
 # Userfile
@@ -156,17 +163,25 @@ db.Userfile.created_on.writable = False
 # Parambind
 db.define_table(
   'Parambind',
+  Field( 'runconf_id', 'reference Runconf', notnull=True ),
   Field( 'pos', 'integer', notnull=True ),
   Field( 'param_id', 'reference Param', notnull=True ),
-  Field( 'userfile_id', 'reference Userfile', notnull=True ),
-  Field( 'runconf_id', 'reference Runconf', notnull=True ) )
+  Field( 'userfile_id', 'reference Userfile', notnull=True ) )
+
+db.Parambind.pos.writable = db.Parambind.pos.readable = False
+db.Parambind.id.readable = False
+db.Parambind.param_id.writable  = False
+db.Parambind.runconf_id.writable = False
 
 
 # Targetbind
 db.define_table(
   'Targetbind',
-  Field( 'target_id', 'reference Target', notnull=True ),
-  Field( 'runconf_id', 'reference Runconf', notnull=True ) )
+  Field( 'runconf_id', 'reference Runconf', notnull=True ),
+  Field( 'target_id', 'reference Target', notnull=True ) )
+
+db.Targetbind.runconf_id.writable = False
+db.Targetbind.id.readable = False
 
 
 

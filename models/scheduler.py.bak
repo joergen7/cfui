@@ -62,8 +62,7 @@ def createWf( runconf_id ):
 
     suffix = getSuffix( runconf_id )
 
-
-    filename = os.path.join( request.folder, 'private', runconf_id+'.cf' )
+    filename = os.path.join( request.folder, 'private', runconf_id+'_workflow.cf' )
     with open( filename, 'w' )as f:
         f.write( script )
         f.write( '\n' )
@@ -74,18 +73,55 @@ def createWf( runconf_id ):
 
 def task_cf_local( runconf_id, wf ):
 
-    from subprocess import call
+    import subprocess
     import os
+    import shutil
+    import ntpath
+    import json
 
-    # call( ['cuneiform', wf], cwd=os.path.join( request.folder, 'uploads' ) )
-    call( ["cuneiform", "-h"] )
+    # call cuneiform
+    cwd = os.path.join( request.folder, 'uploads' )
+    summary = os.path.join( '..', 'private', str( runconf_id )+'_summary.json' )
+    stdout = os.path.join( request.folder, 'private', str( runconf_id )+'_stdout.txt' )
+    stderr = os.path.join( request.folder, 'private', str( runconf_id )+'_stderr.txt' )
+    with open( stdout, 'w' )as so:
+        with open( stderr, 'w' )as se:
+            retval = subprocess.call( ['cuneiform', '-s', summary, wf], cwd=cwd, stdout=so, stderr=se )
+
+    db( db.Runconf.id==runconf_id ).update( tend=request.now, retval=retval )
+
+    # gather summary
+    summary = os.path.join( request.folder, 'private', str( runconf_id )+'_summary.json' )
+    with open( summary, 'r' )as f:
+        s = json.load( f )
+    output = s.get( "output" )
+    runid = s.get( "runId" )
+    t = s.get( "type" )
+
+    # define private path
+    priv = os.path.join( request.folder, 'private' )
+
+    # gather statistics log
+    statlog = str( runconf_id )+'_stat.log'
+    subprocess.call( 'cat /tmp/cuneiform-stat.log | grep '+runid+' > '+statlog, shell=True, cwd=priv )
+
+    # copy output files
+    if t == "File":
+        for src in output:
+            basename = ntpath.basename( src )
+            dest = os.path.join( priv, basename )
+            shutil.copyfile( src, dest )
+            db.Outputfile.insert( reffile=basename, runconf_id=runconf_id )
+
+    # commit database alterations
+    db.commit()
 
 def cfrun( runconf_id ):
 
     wf = createWf( runconf_id )
+    db( db.Runconf.id==runconf_id ).update( committed_on=request.now )
 
     scheduler.queue_task( task_cf_local, pvars=dict( runconf_id=runconf_id, wf=wf ) )
-    db.commit()
 
 
 
