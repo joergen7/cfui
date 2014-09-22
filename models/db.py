@@ -83,7 +83,7 @@ auth.settings.reset_password_requires_verification = True
 # Workflow
 db.define_table(
   'Workflow',
-  Field( 'title', unique=True, requires=IS_NOT_EMPTY() ),
+  Field( 'title', requires=IS_NOT_EMPTY() ),
   Field( 'script', 'upload', requires=IS_NOT_EMPTY() ),
   Field( 'descr', 'text' ),
   Field( 'created_by', 'reference auth_user', default=auth.user_id ),
@@ -150,7 +150,7 @@ db.Outputfile.reffile.writable = False
 # Userfile
 db.define_table(
   'Userfile',
-  Field( 'title', unique=True, requires = IS_NOT_EMPTY() ),
+  Field( 'title', requires = IS_NOT_EMPTY() ),
   Field( 'reffile', 'upload', requires = IS_NOT_EMPTY() ),
   Field( 'descr', 'text' ),
   Field( 'created_by', 'reference auth_user', default=auth.user_id ),
