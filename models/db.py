@@ -89,12 +89,15 @@ db.define_table(
   Field( 'created_by', 'reference auth_user', default=auth.user_id ),
   Field( 'created_on', 'datetime', default=request.now ),
   Field.Virtual( 'Action', lambda row: A( 'run ...', _href=URL( 'default', 'prepare', vars=dict( workflow_id=row.Workflow.id ) ) ) ),
+  Field.Virtual( 'Script file', lambda row: A( 'view ...', _href=URL( 'default', 'view_script', vars=dict( script=row.Workflow.script ) ) ) ),
   format='%(title)s',
   common_filter=lambda query: db.Workflow.created_by==auth.user_id )
 
 db.Workflow.id.readable = False
 db.Workflow.created_by.readable = db.Workflow.created_by.writable = False
 db.Workflow.created_on.writable = False
+db.Workflow.script.readable = False
+
 
 
 # Param

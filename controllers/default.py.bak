@@ -236,8 +236,32 @@ def outchannel():
 
 
 @auth.requires_login()
+def view_errchannel():
+    return errchannel()
+
+
+@auth.requires_login()
+def errchannel():
+
+    import os
+
+    runconf_id = request.vars.runconf_id
+    return dict( file=os.path.join( request.folder, 'private', str( runconf_id )+'_stderr.txt' ) )
+
+
+@auth.requires_login()
 def view_outchannel():
     return outchannel()
+
+
+@auth.requires_login()
+def view_script():
+
+    import os
+
+    script = request.vars.script
+    return dict( file=os.path.join( request.folder, 'download', script ) )
+
 
 
 def user():

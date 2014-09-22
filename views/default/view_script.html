@@ -1,0 +1,9 @@
+{{extend 'layout.html'}}
+{{import ntpath}}
+{{with open( file )as f: s = f.read()}}
+{{=A( 'Back to Workflows ...', _href=URL( 'default', 'workflow' ) )}}
+<h1>Workflow script</h1>
+{{=A( ntpath.basename( file ), _href=URL( a='cfui', c='default', f='download', args=[script] ) )}}
+{{=CODE( s )}}
+
+{{=BEAUTIFY( request.vars )}}

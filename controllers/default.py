@@ -254,6 +254,16 @@ def view_outchannel():
     return outchannel()
 
 
+@auth.requires_login()
+def view_script():
+
+    import os
+
+    script = request.vars.script
+    return dict( script=script, file=os.path.join( request.folder, 'uploads', script ) )
+
+
+
 def user():
     """
     exposes:
