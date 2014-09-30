@@ -162,6 +162,9 @@ db.Userfile.id.readable = False
 db.Userfile.created_by.readable = db.Userfile.created_by.writable = False
 db.Userfile.created_on.writable = False
 
+db.Userfile._after_insert.append( lambda f, id: copy_from_uploads( f.get( 'reffile' ) ) )
+db.Userfile._after_update.append( lambda s, f: copy_from_uploads( f.get( 'reffile' ) ) )
+
 
 # Parambind
 db.define_table(

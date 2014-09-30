@@ -29,6 +29,7 @@ def userfile():
       db.Userfile,
       linked_tables=[],
       details=False,
+      editable=False,
       searchable=False,
       csv=False,
       headers={ 'Userfile.reffile' : 'File' }
@@ -260,7 +261,7 @@ def view_script():
     import os
 
     script = request.vars.script
-    return dict( file=os.path.join( request.folder, 'download', script ) )
+    return dict( script=script, file=os.path.join( request.folder, 'uploads', script ) )
 
 
 

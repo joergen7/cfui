@@ -83,27 +83,29 @@ def task_cf_local( runconf_id, wf ):
     db( db.Runconf.id==runconf_id ).update( started_on=request.now )
     db.commit()
 
+    # define private path
+    priv = os.path.join( request.folder, 'private' )
+
     # call cuneiform
     cwd = os.path.join( request.folder, 'uploads' )
-    summary = os.path.join( '..', 'private', str( runconf_id )+'_summary.json' )
-    stdout = os.path.join( request.folder, 'private', str( runconf_id )+'_stdout.txt' )
-    stderr = os.path.join( request.folder, 'private', str( runconf_id )+'_stderr.txt' )
+    summary = os.path.join( priv, str( runconf_id )+'_summary.json' )
+    stdout = os.path.join( priv, str( runconf_id )+'_stdout.txt' )
+    stderr = os.path.join( priv, str( runconf_id )+'_stderr.txt' )
     with open( stdout, 'w' )as so:
         with open( stderr, 'w' )as se:
-            retval = subprocess.call( ['cuneiform', '-s', summary, wf], cwd=cwd, stdout=so, stderr=se )
+            try:
+                retval = subprocess.call( ['cuneiform', '-s', summary, wf], cwd=cwd, stdout=so, stderr=se )
+            except OSError:
+                retval = -1
 
     db( db.Runconf.id==runconf_id ).update( ended_on=request.now, retval=retval )
 
     # gather summary
-    summary = os.path.join( request.folder, 'private', str( runconf_id )+'_summary.json' )
     with open( summary, 'r' )as f:
         s = json.load( f )
     output = s.get( "output" )
     runid = s.get( "runId" )
     t = s.get( "type" )
-
-    # define private path
-    priv = os.path.join( request.folder, 'private' )
 
     # gather statistics log
     statlog = str( runconf_id )+'_stat.log'
@@ -120,12 +122,87 @@ def task_cf_local( runconf_id, wf ):
     # commit database alterations
     db.commit()
 
+
+def task_cf_hiway( runconf_id, wf ):
+
+    import subprocess
+    import os
+    import shutil
+    import ntpath
+    import json
+
+    db( db.Runconf.id==runconf_id ).update( started_on=request.now )
+    db.commit()
+
+    # define private path
+    priv = os.path.join( request.folder, 'private' )
+
+    # call cuneiform
+    cwd = priv
+    wf = ntpath.basename( wf )
+    summary = str( runconf_id )+'_summary.json'
+    try:
+        retval = subprocess.call( ['yarn', 'jar', '/home/hiway/software/hiway-0.2.0-SNAPSHOT/hiway-core-0.2.0-SNAPSHOT.jar', '-workflow', wf, '-s', summary], cwd=cwd )
+    except OSError:
+        retval = -1
+
+    db( db.Runconf.id==runconf_id ).update( ended_on=request.now, retval=retval )
+    db.commit()
+
+    # gather summary
+    summary = os.path.join( priv, summary )
+    with open( summary, 'r' )as f:
+        s = json.load( f )
+
+    amerr = s.get( 'amerr' )
+    amout = s.get( 'amout' )
+    output = s.get( 'output' )
+    statlog_link = s.get( 'statlog' )
+
+    # TODO: gather stdout
+
+    # TODO: gather stderr
+
+    # gather statistics log
+    statlog = str( runconf_id )+'_stat.log'
+    copy_to_private( statlog_link, statlog )
+
+    # copy output files
+    for src in output:
+        basename = ntpath.basename( src )
+        copy_to_private( src, basename )
+        db.Outputfile.insert( reffile=basename, runconf_id=runconf_id )
+
+    db.commit()
+
+
+
+def task_copy_from_uploads( filename ):
+
+    import os
+    import subprocess
+
+    cwd = os.path.join( request.folder, 'uploads' )
+    subprocess.call( ['hdfs', 'dfs', '-copyFromLocal', filename, filename], cwd=cwd )
+
+def copy_from_uploads( filename ):
+    scheduler.queue_task( task_copy_from_uploads, pvars=dict( filename=filename ) )
+
+def copy_to_private( link, filename ):
+
+    import subprocess
+    import os
+
+    subprocess.call( ['hdfs', 'dfs', '-copyToLocal', link, os.path.join( request.folder, 'private', filename )] )
+
 def cfrun( runconf_id ):
 
     wf = createWf( runconf_id )
     db( db.Runconf.id==runconf_id ).update( committed_on=request.now )
+    pvars=dict( runconf_id=runconf_id, wf=wf )
 
-    scheduler.queue_task( task_cf_local, pvars=dict( runconf_id=runconf_id, wf=wf ) )
+    # scheduler.queue_task( task_cf_local, pvars=pvars )
+    scheduler.queue_task( task_cf_hiway, pvars=pvars )
 
 
 
