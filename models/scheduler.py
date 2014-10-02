@@ -154,14 +154,18 @@ def task_cf_hiway( runconf_id, wf ):
     with open( summary, 'r' )as f:
         s = json.load( f )
 
-    amerr = s.get( 'amerr' )
-    amout = s.get( 'amout' )
+    stderr_link = s.get( 'stderr' )
+    stdout_link = s.get( 'stdout' )
     output = s.get( 'output' )
     statlog_link = s.get( 'statlog' )
 
-    # TODO: gather stdout
+    # gather stdout
+    stdout = str( runconf_id )+'_stdout.txt'
+    copy_to_private( stdout_link, stdout )
 
-    # TODO: gather stderr
+    # gather stderr
+    stderr = str( runconf_id )+'_stderr.txt'
+    copy_to_private( stderr_link, stderr )
 
     # gather statistics log
     statlog = str( runconf_id )+'_stat.log'
